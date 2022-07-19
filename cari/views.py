@@ -1,5 +1,7 @@
 import sys
-sys.path.append('/volume/')
+sys.path.append('ml/')
+
+import ai
 
 from django.shortcuts import render
 from rest_framework import status
@@ -9,7 +11,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.http import Http404
 
-from ml import ai
+# from ml import ai
 from .models import User, Result
 # serializers
 from .serializers import UserSerializer, ResultSerializer
@@ -59,7 +61,7 @@ class ResultDetail(APIView):
     def get_result_img(self, user_id):
         try:
             result = Result.objects.get(user_id=user_id)
-            return result.result_img
+            return result.result_img.url
         except Result.DoesNotExist:
             raise Http404
 
@@ -67,7 +69,7 @@ class ResultDetail(APIView):
     def get_user_img(self, user_id):
         try:
             user = User.objects.get(user_id=user_id)
-            return user.user_img
+            return user.user_img.url
         except User.DoesNotExist:
             raise Http404
 
@@ -76,18 +78,18 @@ class ResultDetail(APIView):
         user_id = request.query_params.get('id')
         emotion = request.query_params.get('emotion')
 
-        before_img = self.get_user_img(user_id).url
+        before_img = self.get_user_img(user_id)
         # TODO : before_img와 emotion을 ai모델에 input으로 넣어서 결과물 산출하기
 
-        user_id = 4
-
-        image_path = ""
+        user_id = 1
+        image_path = "/assets/user_image/"
         emotion = 3
 
-        ai.generate_imageclip(user_id, image_path, emotion)
+        ai.generate_imageclip(user_id, image_path, emotion)  
+
         # TODO : 나온 결과물 DB(Result)에 저장하기
 
-        after_img = self.get_result_img(user_id).url  # 모델 돌린 결과 url
+        after_img = self.get_result_img(user_id)  # 모델 돌린 결과 url
 
         return Response({
             "before_img": before_img,
